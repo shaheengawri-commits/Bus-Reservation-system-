@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smart Bus Reservation System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== Top Navigation ===== -->
+  <header class="navbar">
+    <div class="container navbar__inner">
+      <a href="#top" class="navbar__brand">
+        <span class="navbar__icon">🚌</span>
+        <span>Smart Bus<strong>Reservation</strong></span>
+      </a>
+      <nav class="navbar__links">
+        <a href="#search">Search</a>
+        <a href="#bookings-manage">My Bookings</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ===== Hero / Homepage ===== -->
+    <section class="hero" id="search">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <span class="eyebrow">Jaypee Institute of Information Technology · SDF Project</span>
+          <h1>Smart Bus Reservation System</h1>
+          <p>
+            Search routes, pick a seat, and get a confirmed ticket in a few clicks.
+            Originally built as a C++ console app, now reimagined as a fast,
+            no-framework web app with local storage so your bookings persist
+            even after a refresh.
+          </p>
+        </div>
+
+        <form id="search-form" class="search-card" novalidate>
+          <h2 class="search-card__title">Find your bus</h2>
+
+          <div class="field">
+            <label for="route">Route</label>
+            <select id="route" required>
+              <option value="">All routes</option>
+              <option value="Delhi to Jaipur">Delhi → Jaipur</option>
+              <option value="Delhi to Agra">Delhi → Agra</option>
+              <option value="Delhi to Chandigarh">Delhi → Chandigarh</option>
+              <option value="Delhi to Lucknow">Delhi → Lucknow</option>
+              <option value="Delhi to Dehradun">Delhi → Dehradun</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="travel-date">Travel date</label>
+            <input type="date" id="travel-date" required />
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--block">Search Buses</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== Bus Results ===== -->
+    <section class="section" id="results-section" hidden>
+      <div class="container">
+        <div class="section__header">
+          <h2>Available Buses</h2>
+          <p id="results-subtitle" class="section__subtitle"></p>
+        </div>
+        <div id="bus-results" class="bus-grid"></div>
+        <p id="no-results" class="empty-note" hidden>No buses found for that route. Try a different route.</p>
+      </div>
+    </section>
+
+    <!-- ===== Seat Selection ===== -->
+    <section class="section section--muted" id="seat-section" hidden>
+      <div class="container">
+        <button class="link-back" data-back="results-section">&larr; Back to results</button>
+        <div class="section__header">
+          <h2>Choose your seat</h2>
+          <p id="seat-bus-summary" class="section__subtitle"></p>
+        </div>
+
+        <div class="seat-layout">
+          <div class="seat-map-wrap">
+            <div class="seat-map__front">Driver</div>
+            <div id="seat-map" class="seat-map"></div>
+            <div class="seat-legend">
+              <span class="legend-item"><i class="dot dot--available"></i> Available</span>
+              <span class="legend-item"><i class="dot dot--selected"></i> Selected</span>
+              <span class="legend-item"><i class="dot dot--booked"></i> Booked</span>
+            </div>
+          </div>
+
+          <div class="seat-info-card">
+            <h3>Seat details</h3>
+            <div id="seat-info-empty" class="seat-info__empty">Tap an available seat to see its type and price.</div>
+            <div id="seat-info-filled" class="seat-info__filled" hidden>
+              <p><span>Seat</span><strong id="info-seat-number">—</strong></p>
+              <p><span>Type</span><strong id="info-seat-type">—</strong></p>
+              <p><span>Price</span><strong id="info-seat-price">—</strong></p>
+            </div>
+            <button id="continue-to-passenger" class="btn btn--primary btn--block" disabled>Continue</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Passenger Details ===== -->
+    <section class="section" id="passenger-section" hidden>
+      <div class="container container--narrow">
+        <button class="link-back" data-back="seat-section">&larr; Back to seat selection</button>
+        <div class="section__header">
+          <h2>Passenger details</h2>
+          <p class="section__subtitle">Almost done — just a couple of details for your ticket.</p>
+        </div>
+
+        <div class="passenger-layout">
+          <form id="passenger-form" class="form-card" novalidate>
+            <div class="field">
+              <label for="passenger-name">Full name</label>
+              <input type="text" id="passenger-name" placeholder="e.g. Aditi Sharma" required />
+            </div>
+            <div class="field">
+              <label for="passenger-phone">Phone number</label>
+              <input type="tel" id="passenger-phone" placeholder="e.g. 9876543210" pattern="[0-9]{10}" maxlength="10" required />
+            </div>
+            <button type="submit" class="btn btn--primary btn--block">Confirm Booking</button>
+          </form>
+
+          <div class="summary-card">
+            <h3>Trip summary</h3>
+            <dl id="trip-summary" class="summary-list"></dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Booking Confirmation ===== -->
+    <section class="section section--muted" id="confirmation-section" hidden>
+      <div class="container container--narrow">
+        <div class="section__header">
+          <h2>You're booked! 🎉</h2>
+          <p class="section__subtitle">Save your Booking ID — you'll need it to manage or cancel this ticket.</p>
+        </div>
+
+        <div class="ticket" id="ticket">
+          <div class="ticket__main">
+            <div class="ticket__row ticket__row--head">
+              <span class="ticket__brand">🚌 Smart Bus Reservation</span>
+              <span class="ticket__id" id="ticket-id">BUS-2026-0000</span>
+            </div>
+            <div class="ticket__route">
+              <div>
+                <span class="ticket__label">Route</span>
+                <strong id="ticket-route">—</strong>
+              </div>
+              <span class="ticket__arrow">→</span>
+              <div>
+                <span class="ticket__label">Departure</span>
+                <strong id="ticket-departure">—</strong>
+              </div>
+            </div>
+            <div class="ticket__grid">
+              <div><span class="ticket__label">Passenger</span><strong id="ticket-name">—</strong></div>
+              <div><span class="ticket__label">Bus No.</span><strong id="ticket-bus">—</strong></div>
+              <div><span class="ticket__label">Seat</span><strong id="ticket-seat">—</strong></div>
+              <div><span class="ticket__label">Seat Type</span><strong id="ticket-type">—</strong></div>
+              <div><span class="ticket__label">Travel Date</span><strong id="ticket-date">—</strong></div>
+              <div><span class="ticket__label">Price</span><strong id="ticket-price">—</strong></div>
+            </div>
+          </div>
+          <div class="ticket__stub">
+            <span class="ticket__label">Boarding</span>
+            <strong id="ticket-stub-departure">—</strong>
+            <span class="ticket__stub-seat" id="ticket-stub-seat">Seat —</span>
+          </div>
+        </div>
+
+        <button id="book-another" class="btn btn--secondary">Book another seat</button>
+      </div>
+    </section>
+
+    <!-- ===== Manage / Cancel Bookings ===== -->
+    <section class="section" id="bookings-manage">
+      <div class="container">
+        <div class="section__header">
+          <h2>My Bookings</h2>
+          <p class="section__subtitle">All bookings made on this device. Cancel a ticket to free up the seat again.</p>
+        </div>
+        <div id="bookings-list" class="bookings-list"></div>
+        <p id="no-bookings" class="empty-note">You haven't booked any seats yet.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p>Built as a Software Development Fundamentals project · C++ console app reimagined for the web.</p>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
